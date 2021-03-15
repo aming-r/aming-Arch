@@ -1,11 +1,11 @@
 
 set nocompatible
 filetype on
- 
+
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
- 
- 
+
+
 " 这里根据自己需要的插件来设置，以下是我的配置 "
 "
 " YouCompleteMe:语句补全插件
@@ -28,12 +28,14 @@ inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"             " 回车即�
 nnoremap <c-j> :YcmCompleter GoToDefinitionElseDeclaration<CR>     " 跳转到定义处
 let g:ycm_min_num_of_chars_for_completion=2                 " 从第2个键入字符就开始罗列匹配项
 "
- 
- 
- 
+
+
+
 " github 仓库中的插件 "
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'vim-airline/vim-airline'
+Plugin 'a.vim'
+Plugin 'skywind3000/asyncrun.vim'   
 
 "vim-airline配置:优化vim界面"
 let g:airline#extensions#tabline#enabled = 1
@@ -64,11 +66,9 @@ map <leader>6 :b 6<CR>
 map <leader>7 :b 7<CR>
 map <leader>8 :b 8<CR>
 map <leader>9 :b 9<CR>
-  
-Plugin 'skywind3000/asyncrun.vim'  " For async make 
+
 Plugin 'Shougo/neosnippet'         " For snippet support   
-Plugin 'tabular'        " For aligning     
-Plugin 'mattia72/vim-delphi'
+Plugin 'tabular'        " For aligning     '
 Plugin 'Shougo/neosnippet-snippets'
 " vim-scripts 中的插件 "
 Plugin 'taglist.vim'
@@ -78,29 +78,26 @@ let Tlist_Use_Right_Window=1
 let Tlist_Show_One_File=1
 let Tlist_Exit_OnlyWindow=1
 let Tlist_WinWidt=25
-
-Plugin 'wesleyche/SrcExpl'
-map <C-e> :SrcExplToggle<CR>
-let g:SrcExpl_winHeight = 8
-let g:SrcExpl_refreshTime = 100
-let g:SrcExpl_gobackKey = "<SPACE>"
-let g:SrcExpl_jumpKey = '<ENTER>'
-let g:SrcExpl_isUpdateTags = 0
 "ctrl+e 打开窗口
 Plugin 'The-NERD-tree'
 "NERDTree 配置:F8快捷键显示当前目录树
 map <F8> :NERDTreeToggle<CR>
-let NERDTreeWinSize=25 
- 
+let NERDTreeShowHidden=1
+autocmd VimEnter * if argc() == 0 && !exists("s:std_in") | NERDTreeToggle | endif
+autocmd VimEnter * if argc() == 1 && isdirectory(argv()[0]) && !exists("s:std_in") | exe 'NERDTree' argv()[0] | wincmd p | ene | endif
+autocmd bufenter * if (winnr("$") == 1 && exists("b:NERDTree") && b:NERDTree.isTabTree()) | q |
+
+let NERDTreeWinSize=30
 Plugin 'indentLine.vim'
 Plugin 'delimitMate.vim'
+
 " 非 github 仓库的插件"
 Plugin 'git://git.wincent.com/command-t.git'
- 
+
 "本地仓库的插件 "
- 
+
 call vundle#end()
- 
+
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 """""新文件标题
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
@@ -128,31 +125,41 @@ func SetTitle()
 
 	if &filetype == 'cpp'
 		call append(line(".")+6, "#include<iostream>")
-    	call append(line(".")+7, "using namespace std;")
+		call append(line(".")+7, "using namespace std;")
 		call append(line(".")+8, "")
 	endif
 	if &filetype == 'c'
 		call append(line(".")+6, "#include<stdio.h>")
 		call append(line(".")+7, "")
 	endif
-""	新建文件后，自动定位到文件末尾
-autocmd BufNewFile * normal G
+	""	新建文件后，自动定位到文件末尾
+	autocmd BufNewFile * normal G
 endfunc 
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 "键盘命令
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
-map <F5> :call CompileRunGcc()<CR>
+
+" quickfix模式
+autocmd FileType c,cpp map <buffer> <leader><space> :w<cr>:make<cr>
+let g:ctrlp_max_height = 15
+map <F5> :call CompileRunGcc()<CR>:copen<cr>
 func! CompileRunGcc()
 exec "w"
 if &filetype == 'c'
-exec "!g++ % -o %<"
+exec "!gcc % -o %<"
 exec "! ./%<"
+:set makeprg=gcc\ -Wall\ \ %
+make
 elseif &filetype == 'cpp'
 exec "!g++ % -o %<"
 exec "! ./%<"
+:set makeprg=g++\ -Wall\ \ %
+make	
 elseif &filetype == 'java'
-exec "!javac %"
-exec "!java %<"
+		exec "!javac %"
+		exec "!java %<"
+:set makeprg=javac\ %
+make
 elseif &filetype == 'sh'
 :!source %
 endif
@@ -160,29 +167,26 @@ endfunc
 "C,C++的调试
 map <F9> :call Rungdb()<CR>
 func! Rungdb()
-exec "w"
-exec "!g++ % -g -o %<"
-exec "!gdb ./%<"
+	exec "w"
+	exec "!g++ % -g -o %<"
+	exec "!gdb ./%<"
 endfunc 
 nmap <leader>w :w!<cr>
 nmap <leader>f :find<cr>
- 
+
 " 映射全选+复制 ctrl+a
 map <C-A> ggVGY
 map! <C-A> <Esc>ggVGY
 map <F12> gg=G
 " 选中状态下 Ctrl+c 复制
 vmap <C-c> "+y
-    
-
 """"""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 
 ""实用设置
 """""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""""
 " 设置当文件被改动时自动载入
 set autoread
-" quickfix模式
-autocmd FileType c,cpp,pas map <buffer> <leader><space> :w<cr>:make<cr>
+
 "代码补全 
 set completeopt=preview,menu 
 "允许插件  
@@ -205,7 +209,7 @@ hi CursorLine	cterm=NONE	ctermbg=239 term=bold	cterm=bold	guibg=NONE	guifg=NONE
 set magic                   " 设置魔术
 set guioptions-=T           " 隐藏工具栏
 set guioptions-=m           " 隐藏菜单栏
-"set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&encoding}\ %c:%l/%L%)\
+set statusline=\ %<%F[%1*%M%*%n%R%H]%=\ %y\ %0(%{&fileformat}\ %{&encoding}\ %c:%l/%L%)\
 " 设置在状态行显示的信息
 set fdm=indent
 nnoremap <C-a> za
@@ -252,7 +256,7 @@ set fencs=utf-8,ucs-bom,shift-jis,gb18030,gbk,gb2312,cp936
 set langmenu=zh_CN.UTF-8
 set helplang=cn
 " 我的状态行显示的内容（包括文件类型和解码）
-set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [POS=%l,%v][%p%%]\ %{strftime(\"%d/%m/%y\ -\ %H:%M\")}
+"set statusline=%F%m%r%h%w\ [FORMAT=%{&ff}]\ [TYPE=%Y]\ [POS=%l,%v][%p%%]\ %{strftime(\"%d/%m/%y\ -\ %H:%M\")}
 set statusline=[%F]%y%r%m%*%=[Line:%l/%L,Column:%c][%p%%]
 " 总是显示状态行
 set laststatus=2
@@ -292,12 +296,11 @@ set matchtime=1
 set scrolloff=3
 " 为C程序提供自动缩进
 set smartindent
-" 高亮显示普通txt文件（需要txt.vim脚本）
- au BufRead,BufNewFile *  setfiletype txt
+
 "自动补全
 :inoremap ( ()<ESC>i
 :inoremap ) <c-r>=ClosePair(')')<CR>
-":inoremap { {<CR>}<ESC>O
+:inoremap {<CR> {<CR>}<ESC>O
 :inoremap } <c-r>=ClosePair('}')<CR>
 :inoremap [ []<ESC>i
 :inoremap ] <c-r>=ClosePair(']')<CR>
@@ -314,6 +317,5 @@ filetype plugin indent on
 "打开文件类型检测, 加了这句才可以用智能补全
 set completeopt=longest,menu
 
-map <F11> :w<CR>:!fpc "%"<CR><CR>
-set ft=pascal
+
 
