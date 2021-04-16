@@ -5,7 +5,6 @@ filetype on
 set rtp+=~/.vim/bundle/Vundle.vim
 call vundle#begin()
 
-
 " 这里根据自己需要的插件来设置，以下是我的配置 "
 "
 " YouCompleteMe:语句补全插件
@@ -28,21 +27,26 @@ inoremap <expr> <CR> pumvisible() ? "\<C-y>" : "\<CR>"             " 回车即�
 nnoremap <c-j> :YcmCompleter GoToDefinitionElseDeclaration<CR>     " 跳转到定义处
 let g:ycm_min_num_of_chars_for_completion=2                 " 从第2个键入字符就开始罗列匹配项
 "
+noremap <c-z> <NOP>
 
-
-
+let g:ycm_semantic_triggers =  {
+			\ 'c,cpp,python,java,go,erlang,perl': ['re!\w{2}'],
+			\ 'cs,lua,javascript': ['re!\w{2}'],
+			\ }
+let g:ycm_server_log_level = 'info'
 " github 仓库中的插件 "
 Plugin 'VundleVim/Vundle.vim'
 Plugin 'vim-airline/vim-airline'
 Plugin 'a.vim'
 Plugin 'skywind3000/asyncrun.vim'   
+Plugin 'Valloric/YouCompleteMe'
 
 "vim-airline配置:优化vim界面"
 let g:airline#extensions#tabline#enabled = 1
 " airline设置
 " 显示颜色
 set t_Co=256 " required
-colorscheme murphy
+colorscheme vividchalk
 " 使用powerline打过补丁的字体
 let g:airline_powerline_fonts = 1
 " 开启tabline
@@ -65,7 +69,6 @@ map <leader>5 :b 5<CR>
 map <leader>6 :b 6<CR>
 map <leader>7 :b 7<CR>
 map <leader>8 :b 8<CR>
-map <leader>9 :b 9<CR>
 
 Plugin 'Shougo/neosnippet'         " For snippet support   
 Plugin 'tabular'        " For aligning     '
@@ -78,6 +81,7 @@ let Tlist_Use_Right_Window=1
 let Tlist_Show_One_File=1
 let Tlist_Exit_OnlyWindow=1
 let Tlist_WinWidt=25
+let Tlist_Height=10
 "ctrl+e 打开窗口
 Plugin 'The-NERD-tree'
 "NERDTree 配置:F8快捷键显示当前目录树
@@ -141,28 +145,27 @@ endfunc
 
 " quickfix模式
 autocmd FileType c,cpp map <buffer> <leader><space> :w<cr>:make<cr>
+nmap <leader>cn :cn<cr>
+nmap <leader>cp :cp<cr>
+nmap <leader>cw :cw 10<cr>
 let g:ctrlp_max_height = 15
-map <F5> :call CompileRunGcc()<CR>:copen<cr>
+map <F5> :call CompileRunGcc()<CR>:copen<CR>
 func! CompileRunGcc()
-exec "w"
-if &filetype == 'c'
-exec "!gcc % -o %<"
-exec "! ./%<"
-:set makeprg=gcc\ -Wall\ \ %
-make
-elseif &filetype == 'cpp'
-exec "!g++ % -o %<"
-exec "! ./%<"
-:set makeprg=g++\ -Wall\ \ %
-make	
-elseif &filetype == 'java'
-		exec "!javac %"
-		exec "!java %<"
-:set makeprg=javac\ %
+	exec "w"
+	if &filetype == 'c'
+		exec "!gcc % -o %<" 
+		:set makeprg=gcc\ -Wall\ \ %
+		make
+	elseif &filetype == 'cpp'
+		exec "!g++ % -o %<"
+		:set makeprg=g++\ -Wall\ \ %
+		make	
+	elseif &filetype == 'java'
+:set makeprg=javac\ \ %
 make
 elseif &filetype == 'sh'
-:!source %
-endif
+		:!source %
+	endif
 endfunc
 "C,C++的调试
 map <F9> :call Rungdb()<CR>
@@ -316,6 +319,4 @@ endfunction
 filetype plugin indent on 
 "打开文件类型检测, 加了这句才可以用智能补全
 set completeopt=longest,menu
-
-
 
